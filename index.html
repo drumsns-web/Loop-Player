@@ -809,9 +809,16 @@ const expandSVG = `<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-
 const collapseSVG = `<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>`;
 
 fullscreenBtn.addEventListener('click', () => {
+  // iOS Safari: use webkitEnterFullscreen on video element
+  if (video.webkitEnterFullscreen) {
+    video.webkitEnterFullscreen();
+    return;
+  }
+  // Other browsers
   const wrap = document.getElementById('videoWrap');
   if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    if (wrap.requestFullscreen) wrap.requestFullscreen();
+    if (video.requestFullscreen) video.requestFullscreen();
+    else if (wrap.requestFullscreen) wrap.requestFullscreen();
     else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
   } else {
     if (document.exitFullscreen) document.exitFullscreen();
