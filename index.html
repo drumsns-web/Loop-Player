@@ -131,6 +131,31 @@
     display: block;
   }
 
+  /* Fullscreen button */
+  #fullscreenBtn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #fullscreenBtn svg { width: 20px; height: 20px; fill: #fff; }
+  #fullscreenBtn:active { background: rgba(255,60,0,0.6); }
+
+  /* Fullscreen styles */
+  #videoWrap:-webkit-full-screen { max-height: 100vh; }
+  #videoWrap:fullscreen { max-height: 100vh; }
+  #videoWrap:-webkit-full-screen video { max-height: 100vh; }
+  #videoWrap:fullscreen video { max-height: 100vh; }
+
   /* AB badge */
   #abBadge {
     position: absolute;
@@ -465,6 +490,9 @@
   <div id="videoWrap">
     <video id="video" playsinline webkit-playsinline></video>
     <div id="abBadge">A-B LOOP</div>
+    <button id="fullscreenBtn" title="フルスクリーン">
+      <svg id="fsIcon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    </button>
   </div>
 
   <div id="controls">
@@ -772,6 +800,31 @@ function updateSeekBg(el) {
   const pct = (el.value - el.min) / (el.max - el.min) * 100;
   const color = el.id === 'speedSlider' ? 'var(--accent2)' : 'var(--accent)';
   el.style.background = `linear-gradient(to right, ${color} ${pct}%, var(--border) ${pct}%)`;
+}
+
+// Fullscreen
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const fsIcon = document.getElementById('fsIcon');
+const expandSVG = `<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>`;
+const collapseSVG = `<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>`;
+
+fullscreenBtn.addEventListener('click', () => {
+  const wrap = document.getElementById('videoWrap');
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (wrap.requestFullscreen) wrap.requestFullscreen();
+    else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+});
+
+document.addEventListener('fullscreenchange', updateFsIcon);
+document.addEventListener('webkitfullscreenchange', updateFsIcon);
+
+function updateFsIcon() {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  fsIcon.innerHTML = isFs ? collapseSVG : expandSVG;
 }
 
 // Init loop state
