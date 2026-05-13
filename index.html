@@ -874,6 +874,8 @@ video.addEventListener('loadedmetadata', () => {
   }
 });
 
+let abLoopJumping = false;
+
 video.addEventListener('timeupdate', () => {
   if (seeking) return;
   const pct = video.duration ? video.currentTime / video.duration : 0;
@@ -881,9 +883,12 @@ video.addEventListener('timeupdate', () => {
   currentTimeEl.textContent = fmtTime(video.currentTime);
   updateSeekBg(seekBar);
 
-  // AB loop check
-  if (abA !== null && abB !== null && video.currentTime >= abB) {
+  // AB loop check - guard against re-entry during seek
+  if (abA !== null && abB !== null && !abLoopJumping && video.currentTime >= abB) {
+    abLoopJumping = true;
     video.currentTime = abA;
+    // ensure playback continues
+    if (video.paused) video.play().catch(()=>{});
   }
 });
 
@@ -892,13 +897,24 @@ video.addEventListener('play', () => {
 });
 video.addEventListener('pause', () => {
   playIcon.innerHTML = playSVG;
+  // Don't save during AB loop jump
+  if (!abLoopJumping) saveSettings();
+});
+video.addEventListener('seeked', () => {
+  if (abLoopJumping) {
+    abLoopJumping = false;
+    // Ensure play after AB jump
+    if (video.paused && abA !== null && abB !== null) {
+      video.play().catch(()=>{});
+    }
+    return; // skip save for AB loop jumps
+  }
   saveSettings();
 });
-video.addEventListener('seeked', () => { saveSettings(); });
 video.addEventListener('ended', () => {
   if (isLooping && (abA === null || abB === null)) {
     video.currentTime = 0;
-    video.play();
+    video.play().catch(()=>{});
   }
   playIcon.innerHTML = playSVG;
 });
