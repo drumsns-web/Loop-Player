@@ -327,7 +327,7 @@
 
   .speedPresets {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     gap: 5px;
   }
 
@@ -633,22 +633,24 @@
     <div class="sectionLabel">SPEED</div>
     <div class="speedSection">
       <div class="speedPresets">
-        <button class="btn speedBtn" data-speed="0.5">50%</button>
-        <button class="btn speedBtn" data-speed="0.55">55%</button>
-        <button class="btn speedBtn" data-speed="0.6">60%</button>
-        <button class="btn speedBtn" data-speed="0.65">65%</button>
-        <button class="btn speedBtn" data-speed="0.7">70%</button>
-        <button class="btn speedBtn" data-speed="0.75">75%</button>
-        <button class="btn speedBtn" data-speed="0.8">80%</button>
-        <button class="btn speedBtn" data-speed="0.85">85%</button>
-        <button class="btn speedBtn" data-speed="0.9">90%</button>
-        <button class="btn speedBtn" data-speed="0.95">95%</button>
-        <button class="btn speedBtn active" data-speed="1">100%</button>
+        <button class="btn speedBtn" data-speed="0.5">0.5x</button>
+        <button class="btn speedBtn" data-speed="0.6">0.6x</button>
+        <button class="btn speedBtn" data-speed="0.7">0.7x</button>
+        <button class="btn speedBtn" data-speed="0.75">0.75x</button>
+        <button class="btn speedBtn" data-speed="0.8">0.8x</button>
+        <button class="btn speedBtn" data-speed="0.9">0.9x</button>
+        <button class="btn speedBtn active" data-speed="1">1x</button>
+        <button class="btn speedBtn" data-speed="1.25">1.25x</button>
+        <button class="btn speedBtn" data-speed="1.5">1.5x</button>
+        <button class="btn speedBtn" data-speed="1.75">1.75x</button>
+        <button class="btn speedBtn" data-speed="2">2x</button>
+        <button class="btn speedBtn" data-speed="2.5">2.5x</button>
+        <button class="btn speedBtn" data-speed="3">3x</button>
       </div>
       <div class="speedSliderRow">
         <label>速度</label>
-        <input type="range" id="speedSlider" min="50" max="100" value="100" step="5">
-        <span id="speedVal">100%</span>
+        <input type="range" id="speedSlider" min="50" max="300" value="100" step="5">
+        <span id="speedVal">1.00x</span>
       </div>
     </div>
 
@@ -954,7 +956,7 @@ speedSlider.addEventListener('input', () => {
 
 function setSpeed(speed, updateSlider = true) {
   video.playbackRate = speed;
-  speedVal.textContent = Math.round(speed * 100) + '%';
+  speedVal.textContent = (Math.round(speed * 100) / 100) + 'x';
   if (updateSlider) {
     speedSlider.value = Math.round(speed * 100);
     updateSeekBg(speedSlider);
