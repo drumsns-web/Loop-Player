@@ -102,6 +102,21 @@
 
   #fileInput { display: none; }
 
+  .lastFileHint {
+    display: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    background: rgba(255,204,0,0.08);
+    border: 1px solid rgba(255,204,0,0.3);
+    padding: 8px 14px;
+    border-radius: 6px;
+    max-width: 280px;
+    text-align: center;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+
   /* PLAYER LAYOUT */
   #playerArea {
     display: none;
@@ -312,7 +327,7 @@
 
   .speedPresets {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 5px;
   }
 
@@ -466,6 +481,83 @@
 
   .frameBtn svg { width: 14px; height: 14px; fill: var(--text); }
 
+  /* AB fine tune */
+  .abTuneSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+  }
+  .abTuneRow {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .abTuneLabel {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    width: 18px;
+    text-align: center;
+  }
+  .abTuneRow:first-child .abTuneLabel { color: var(--accent2); }
+  .abTuneRow:last-child .abTuneLabel { color: #00ccff; }
+  .abTuneBtn {
+    flex: 1;
+    height: 32px;
+    font-size: 10px;
+    padding: 0;
+  }
+  .abTuneBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* SLOTS */
+  .slotSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .slotRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+  .slotBtn {
+    height: 44px;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    position: relative;
+  }
+  .slotBtn.filled {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .slotBtn.filled::after {
+    content: '●';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 6px;
+    color: var(--accent);
+  }
+  .slotBtn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .slotBtn.active::after { color: #fff; }
+  .slotHelp {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
 </style>
 </head>
 <body>
@@ -481,6 +573,7 @@
     <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
   </div>
   <p><strong>動画を選択</strong><br>カメラロールから動画を<br>読み込めます</p>
+  <div id="lastFileHint" class="lastFileHint"></div>
   <input type="file" id="fileInput" accept="video/*">
 </div>
 
@@ -540,18 +633,22 @@
     <div class="sectionLabel">SPEED</div>
     <div class="speedSection">
       <div class="speedPresets">
-        <button class="btn speedBtn" data-speed="0.25">0.25×</button>
-        <button class="btn speedBtn" data-speed="0.5">0.5×</button>
-        <button class="btn speedBtn" data-speed="0.75">0.75×</button>
-        <button class="btn speedBtn active" data-speed="1">1×</button>
-        <button class="btn speedBtn" data-speed="1.5">1.5×</button>
-        <button class="btn speedBtn" data-speed="2">2×</button>
-        <button class="btn speedBtn" data-speed="4">4×</button>
+        <button class="btn speedBtn" data-speed="0.5">50%</button>
+        <button class="btn speedBtn" data-speed="0.55">55%</button>
+        <button class="btn speedBtn" data-speed="0.6">60%</button>
+        <button class="btn speedBtn" data-speed="0.65">65%</button>
+        <button class="btn speedBtn" data-speed="0.7">70%</button>
+        <button class="btn speedBtn" data-speed="0.75">75%</button>
+        <button class="btn speedBtn" data-speed="0.8">80%</button>
+        <button class="btn speedBtn" data-speed="0.85">85%</button>
+        <button class="btn speedBtn" data-speed="0.9">90%</button>
+        <button class="btn speedBtn" data-speed="0.95">95%</button>
+        <button class="btn speedBtn active" data-speed="1">100%</button>
       </div>
       <div class="speedSliderRow">
         <label>速度</label>
-        <input type="range" id="speedSlider" min="10" max="400" value="100" step="5">
-        <span id="speedVal">1.00×</span>
+        <input type="range" id="speedSlider" min="50" max="100" value="100" step="5">
+        <span id="speedVal">100%</span>
       </div>
     </div>
 
@@ -566,6 +663,37 @@
         </button>
       </div>
       <div id="abInfo" class="abInfo">A-B ループなし</div>
+
+      <!-- A-B fine tune -->
+      <div class="abTuneSection">
+        <div class="abTuneRow">
+          <span class="abTuneLabel">A</span>
+          <button class="btn abTuneBtn" data-target="A" data-delta="-0.5">-0.5s</button>
+          <button class="btn abTuneBtn" data-target="A" data-delta="-0.1">-0.1s</button>
+          <button class="btn abTuneBtn" data-target="A" data-delta="0.1">+0.1s</button>
+          <button class="btn abTuneBtn" data-target="A" data-delta="0.5">+0.5s</button>
+        </div>
+        <div class="abTuneRow">
+          <span class="abTuneLabel">B</span>
+          <button class="btn abTuneBtn" data-target="B" data-delta="-0.5">-0.5s</button>
+          <button class="btn abTuneBtn" data-target="B" data-delta="-0.1">-0.1s</button>
+          <button class="btn abTuneBtn" data-target="B" data-delta="0.1">+0.1s</button>
+          <button class="btn abTuneBtn" data-target="B" data-delta="0.5">+0.5s</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- A-B SLOTS -->
+    <div class="sectionLabel">A-B SLOTS</div>
+    <div class="slotSection">
+      <div class="slotRow" id="slotRow">
+        <button class="btn slotBtn" data-slot="1">1</button>
+        <button class="btn slotBtn" data-slot="2">2</button>
+        <button class="btn slotBtn" data-slot="3">3</button>
+        <button class="btn slotBtn" data-slot="4">4</button>
+        <button class="btn slotBtn" data-slot="5">5</button>
+      </div>
+      <div class="slotHelp">タップ：呼び出し / 長押し：現在のA-Bを保存</div>
     </div>
 
     <button class="changeFileBtn" id="changeFileBtn">📂 別の動画を開く</button>
@@ -613,6 +741,82 @@ function fmtTime(s) {
   return `${m}:${sec.toString().padStart(2,'0')}.${dec}`;
 }
 
+// Settings save/load using localStorage
+const STORAGE_KEY = 'loopPlayerSettings_v1';
+let currentFileKey = null;
+let pendingRestore = null;
+
+function getFileKey(file) {
+  return `${file.name}_${file.size}`;
+}
+
+function loadAllSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch { return {}; }
+}
+
+function saveSettings() {
+  if (!currentFileKey) return;
+  const all = loadAllSettings();
+  all[currentFileKey] = {
+    abA, abB,
+    speed: video.playbackRate,
+    loop: isLooping,
+    currentTime: video.currentTime,
+    slots: slots.slice(),
+    lastUsed: Date.now()
+  };
+  all._lastFileKey = currentFileKey;
+  // Keep only most recent 20 files
+  const entries = Object.entries(all).filter(([k]) => k !== '_lastFileKey');
+  entries.sort((a,b) => (b[1].lastUsed||0) - (a[1].lastUsed||0));
+  const trimmed = { _lastFileKey: all._lastFileKey };
+  entries.slice(0, 20).forEach(([k,v]) => trimmed[k] = v);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+  } catch(e) { console.warn('save failed', e); }
+}
+
+function applySettings(s) {
+  if (!s) return;
+  if (typeof s.speed === 'number') setSpeed(s.speed);
+  if (typeof s.loop === 'boolean') {
+    isLooping = s.loop;
+    loopToggle.classList.toggle('active', isLooping);
+  }
+  if (typeof s.abA === 'number') {
+    abA = s.abA;
+    setABtn.classList.add('active');
+    setABtn.textContent = 'A: ' + fmtTime(abA);
+  }
+  if (typeof s.abB === 'number') {
+    abB = s.abB;
+    setBBtn.classList.add('active');
+    setBBtn.textContent = 'B: ' + fmtTime(abB);
+  }
+  updateAbUI();
+  updateAbMarkers();
+  updateTuneButtons();
+  if (typeof s.currentTime === 'number') {
+    video.currentTime = s.currentTime;
+  }
+}
+
+// Show last file hint on initial load
+function showLastFileHint() {
+  const all = loadAllSettings();
+  const lastKey = all._lastFileKey;
+  if (lastKey && all[lastKey]) {
+    const fileName = lastKey.split('_').slice(0, -1).join('_');
+    const hintEl = document.getElementById('lastFileHint');
+    if (hintEl) {
+      hintEl.textContent = `前回: ${fileName}`;
+      hintEl.style.display = 'block';
+    }
+  }
+}
+
 // File open
 dropZone.addEventListener('click', () => fileInput.click());
 changeFileBtn.addEventListener('click', () => fileInput.click());
@@ -625,8 +829,26 @@ fileInput.addEventListener('change', e => {
   video.load();
   dropZone.style.display = 'none';
   playerArea.classList.add('active');
+
+  currentFileKey = getFileKey(file);
+  const all = loadAllSettings();
+  const saved = all[currentFileKey];
+
+  // Reset state first
   abA = null; abB = null;
-  updateAbUI();
+  setABtn.classList.remove('active'); setABtn.textContent = 'A 点をセット';
+  setBBtn.classList.remove('active'); setBBtn.textContent = 'B 点をセット';
+
+  // Load slots for this file
+  loadSlotsFromStorage();
+
+  if (saved) {
+    pendingRestore = saved;
+  } else {
+    pendingRestore = null;
+    updateAbUI();
+    updateTuneButtons();
+  }
 });
 
 // Video events
@@ -635,6 +857,10 @@ video.addEventListener('loadedmetadata', () => {
   seekBar.value = 0;
   updateSeekBg(seekBar);
   updateAbMarkers();
+  if (pendingRestore) {
+    applySettings(pendingRestore);
+    pendingRestore = null;
+  }
 });
 
 video.addEventListener('timeupdate', () => {
@@ -655,7 +881,9 @@ video.addEventListener('play', () => {
 });
 video.addEventListener('pause', () => {
   playIcon.innerHTML = playSVG;
+  saveSettings();
 });
+video.addEventListener('seeked', () => { saveSettings(); });
 video.addEventListener('ended', () => {
   if (isLooping && (abA === null || abB === null)) {
     video.currentTime = 0;
@@ -706,6 +934,7 @@ loopToggle.addEventListener('click', () => {
   isLooping = !isLooping;
   loopToggle.classList.toggle('active', isLooping);
   video.loop = isLooping && (abA === null || abB === null);
+  saveSettings();
 });
 
 // Speed presets
@@ -725,14 +954,15 @@ speedSlider.addEventListener('input', () => {
 
 function setSpeed(speed, updateSlider = true) {
   video.playbackRate = speed;
-  speedVal.textContent = speed.toFixed(2) + '×';
+  speedVal.textContent = Math.round(speed * 100) + '%';
   if (updateSlider) {
     speedSlider.value = Math.round(speed * 100);
     updateSeekBg(speedSlider);
   }
   document.querySelectorAll('.speedBtn').forEach(b => {
-    b.classList.toggle('active', parseFloat(b.dataset.speed) === speed);
+    b.classList.toggle('active', Math.abs(parseFloat(b.dataset.speed) - speed) < 0.001);
   });
+  saveSettings();
 }
 
 // A-B
@@ -741,8 +971,12 @@ setABtn.addEventListener('click', () => {
   setABtn.classList.add('active');
   setABtn.textContent = 'A: ' + fmtTime(abA);
   if (abB !== null && abB <= abA) { abB = null; setBBtn.classList.remove('active'); setBBtn.textContent = 'B 点をセット'; }
+  activeSlot = -1;
+  refreshSlotUI();
   updateAbUI();
   updateAbMarkers();
+  updateTuneButtons();
+  saveSettings();
 });
 
 setBBtn.addEventListener('click', () => {
@@ -752,10 +986,14 @@ setBBtn.addEventListener('click', () => {
   abB = t;
   setBBtn.classList.add('active');
   setBBtn.textContent = 'B: ' + fmtTime(abB);
+  activeSlot = -1;
+  refreshSlotUI();
   updateAbUI();
   updateAbMarkers();
+  updateTuneButtons();
   video.currentTime = abA;
   if (video.paused) video.play().catch(()=>{});
+  saveSettings();
 });
 
 clearAbBtn.addEventListener('click', () => {
@@ -764,6 +1002,140 @@ clearAbBtn.addEventListener('click', () => {
   setBBtn.classList.remove('active'); setBBtn.textContent = 'B 点をセット';
   updateAbUI();
   updateAbMarkers();
+  updateTuneButtons();
+  saveSettings();
+});
+
+// AB fine tune
+document.querySelectorAll('.abTuneBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.target;
+    const delta = parseFloat(btn.dataset.delta);
+    if (target === 'A') {
+      if (abA === null) return;
+      let next = abA + delta;
+      next = Math.max(0, Math.min(next, video.duration));
+      if (abB !== null && next >= abB - 0.05) next = abB - 0.05;
+      abA = next;
+      setABtn.textContent = 'A: ' + fmtTime(abA);
+      video.currentTime = abA;
+    } else {
+      if (abB === null) return;
+      let next = abB + delta;
+      next = Math.max(0, Math.min(next, video.duration));
+      if (abA !== null && next <= abA + 0.05) next = abA + 0.05;
+      abB = next;
+      setBBtn.textContent = 'B: ' + fmtTime(abB);
+    }
+    updateAbUI();
+    updateAbMarkers();
+    saveSettings();
+  });
+});
+
+function updateTuneButtons() {
+  document.querySelectorAll('.abTuneBtn').forEach(btn => {
+    const target = btn.dataset.target;
+    btn.disabled = (target === 'A' && abA === null) || (target === 'B' && abB === null);
+  });
+}
+
+// A-B SLOTS
+const slots = [null, null, null, null, null]; // index 0-4 for slot 1-5
+let activeSlot = -1;
+let slotPressTimer = null;
+let slotPressed = false;
+
+function loadSlotsFromStorage() {
+  if (!currentFileKey) return;
+  const all = loadAllSettings();
+  const saved = all[currentFileKey];
+  if (saved && Array.isArray(saved.slots)) {
+    for (let i = 0; i < 5; i++) slots[i] = saved.slots[i] || null;
+  } else {
+    for (let i = 0; i < 5; i++) slots[i] = null;
+  }
+  activeSlot = -1;
+  refreshSlotUI();
+}
+
+function saveSlotsToStorage() {
+  if (!currentFileKey) return;
+  const all = loadAllSettings();
+  if (!all[currentFileKey]) all[currentFileKey] = {};
+  all[currentFileKey].slots = slots;
+  all[currentFileKey].lastUsed = Date.now();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(all)); } catch(e) {}
+}
+
+function refreshSlotUI() {
+  document.querySelectorAll('.slotBtn').forEach((btn, i) => {
+    btn.classList.toggle('filled', !!slots[i]);
+    btn.classList.toggle('active', i === activeSlot);
+  });
+}
+
+function recallSlot(i) {
+  const s = slots[i];
+  if (!s) return;
+  abA = s.a;
+  abB = s.b;
+  setABtn.classList.add('active');
+  setABtn.textContent = 'A: ' + fmtTime(abA);
+  setBBtn.classList.add('active');
+  setBBtn.textContent = 'B: ' + fmtTime(abB);
+  activeSlot = i;
+  updateAbUI();
+  updateAbMarkers();
+  updateTuneButtons();
+  refreshSlotUI();
+  video.currentTime = abA;
+  if (video.paused) video.play().catch(()=>{});
+  saveSettings();
+}
+
+function storeSlot(i) {
+  if (abA === null || abB === null) {
+    alert('A-B両方をセットしてから保存してください');
+    return;
+  }
+  slots[i] = { a: abA, b: abB };
+  activeSlot = i;
+  refreshSlotUI();
+  saveSettings();
+}
+
+document.querySelectorAll('.slotBtn').forEach((btn, i) => {
+  // Long press to store, tap to recall
+  const startPress = (e) => {
+    slotPressed = false;
+    slotPressTimer = setTimeout(() => {
+      slotPressed = true;
+      storeSlot(i);
+      if (navigator.vibrate) navigator.vibrate(50);
+    }, 600);
+  };
+  const cancelPress = () => {
+    if (slotPressTimer) { clearTimeout(slotPressTimer); slotPressTimer = null; }
+  };
+  const endPress = (e) => {
+    cancelPress();
+    if (!slotPressed) {
+      // It was a tap
+      if (slots[i]) {
+        recallSlot(i);
+      } else {
+        // Empty slot tap = save current
+        storeSlot(i);
+      }
+    }
+  };
+  btn.addEventListener('touchstart', startPress, {passive: true});
+  btn.addEventListener('touchend', endPress);
+  btn.addEventListener('touchcancel', cancelPress);
+  btn.addEventListener('mousedown', startPress);
+  btn.addEventListener('mouseup', endPress);
+  btn.addEventListener('mouseleave', cancelPress);
 });
 
 function updateAbUI() {
@@ -838,6 +1210,9 @@ function updateFsIcon() {
 loopToggle.classList.add('active');
 video.loop = false; // managed manually for AB support
 setSpeed(1);
+updateTuneButtons();
+refreshSlotUI();
+showLastFileHint();
 </script>
 </body>
 </html>
