@@ -527,10 +527,10 @@
     gap: 5px;
   }
   .slotBtn {
-    height: 44px;
+    height: 40px;
     font-family: 'Unbounded', sans-serif;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
     position: relative;
   }
   .slotBtn.filled {
@@ -634,11 +634,15 @@
     <div class="speedSection">
       <div class="speedPresets">
         <button class="btn speedBtn" data-speed="0.5">0.5x</button>
+        <button class="btn speedBtn" data-speed="0.55">0.55x</button>
         <button class="btn speedBtn" data-speed="0.6">0.6x</button>
+        <button class="btn speedBtn" data-speed="0.65">0.65x</button>
         <button class="btn speedBtn" data-speed="0.7">0.7x</button>
         <button class="btn speedBtn" data-speed="0.75">0.75x</button>
         <button class="btn speedBtn" data-speed="0.8">0.8x</button>
+        <button class="btn speedBtn" data-speed="0.85">0.85x</button>
         <button class="btn speedBtn" data-speed="0.9">0.9x</button>
+        <button class="btn speedBtn" data-speed="0.95">0.95x</button>
         <button class="btn speedBtn active" data-speed="1">1x</button>
         <button class="btn speedBtn" data-speed="1.25">1.25x</button>
         <button class="btn speedBtn" data-speed="1.5">1.5x</button>
@@ -650,7 +654,7 @@
       <div class="speedSliderRow">
         <label>速度</label>
         <input type="range" id="speedSlider" min="50" max="300" value="100" step="5">
-        <span id="speedVal">1.00x</span>
+        <span id="speedVal">1x</span>
       </div>
     </div>
 
@@ -694,8 +698,13 @@
         <button class="btn slotBtn" data-slot="3">3</button>
         <button class="btn slotBtn" data-slot="4">4</button>
         <button class="btn slotBtn" data-slot="5">5</button>
+        <button class="btn slotBtn" data-slot="6">6</button>
+        <button class="btn slotBtn" data-slot="7">7</button>
+        <button class="btn slotBtn" data-slot="8">8</button>
+        <button class="btn slotBtn" data-slot="9">9</button>
+        <button class="btn slotBtn" data-slot="10">10</button>
       </div>
-      <div class="slotHelp">タップ：呼び出し / 長押し：現在のA-Bを保存</div>
+      <div class="slotHelp">タップ：呼び出し / 長押し：保存・上書き / ダブルタップ：クリア</div>
     </div>
 
     <button class="changeFileBtn" id="changeFileBtn">📂 別の動画を開く</button>
@@ -1043,19 +1052,22 @@ function updateTuneButtons() {
 }
 
 // A-B SLOTS
-const slots = [null, null, null, null, null]; // index 0-4 for slot 1-5
+const SLOT_COUNT = 10;
+const slots = new Array(SLOT_COUNT).fill(null);
 let activeSlot = -1;
 let slotPressTimer = null;
 let slotPressed = false;
+let lastSlotTapTime = 0;
+let lastSlotTapIndex = -1;
 
 function loadSlotsFromStorage() {
   if (!currentFileKey) return;
   const all = loadAllSettings();
   const saved = all[currentFileKey];
   if (saved && Array.isArray(saved.slots)) {
-    for (let i = 0; i < 5; i++) slots[i] = saved.slots[i] || null;
+    for (let i = 0; i < SLOT_COUNT; i++) slots[i] = saved.slots[i] || null;
   } else {
-    for (let i = 0; i < 5; i++) slots[i] = null;
+    for (let i = 0; i < SLOT_COUNT; i++) slots[i] = null;
   }
   activeSlot = -1;
   refreshSlotUI();
@@ -1107,8 +1119,17 @@ function storeSlot(i) {
   saveSettings();
 }
 
+function clearSlot(i) {
+  if (!slots[i]) return;
+  if (!confirm(`スロット ${i + 1} をクリアしますか？`)) return;
+  slots[i] = null;
+  if (activeSlot === i) activeSlot = -1;
+  refreshSlotUI();
+  saveSettings();
+}
+
 document.querySelectorAll('.slotBtn').forEach((btn, i) => {
-  // Long press to store, tap to recall
+  // Long press to store/overwrite, tap to recall, double-tap to clear
   const startPress = (e) => {
     slotPressed = false;
     slotPressTimer = setTimeout(() => {
@@ -1122,15 +1143,35 @@ document.querySelectorAll('.slotBtn').forEach((btn, i) => {
   };
   const endPress = (e) => {
     cancelPress();
-    if (!slotPressed) {
-      // It was a tap
+    if (slotPressed) return; // long press already handled
+
+    // Check for double tap
+    const now = Date.now();
+    if (lastSlotTapIndex === i && (now - lastSlotTapTime) < 350) {
+      // Double tap detected
+      lastSlotTapTime = 0;
+      lastSlotTapIndex = -1;
       if (slots[i]) {
-        recallSlot(i);
-      } else {
-        // Empty slot tap = save current
-        storeSlot(i);
+        clearSlot(i);
       }
+      return;
     }
+    lastSlotTapTime = now;
+    lastSlotTapIndex = i;
+
+    // Single tap behavior - wait briefly to see if double tap follows
+    setTimeout(() => {
+      if (lastSlotTapIndex === i && lastSlotTapTime === now) {
+        // No double tap occurred
+        if (slots[i]) {
+          recallSlot(i);
+        } else {
+          storeSlot(i);
+        }
+        lastSlotTapTime = 0;
+        lastSlotTapIndex = -1;
+      }
+    }, 350);
   };
   btn.addEventListener('touchstart', startPress, {passive: true});
   btn.addEventListener('touchend', endPress);
